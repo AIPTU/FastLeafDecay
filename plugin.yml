@@ -1,0 +1,5 @@
+name: FastLeafDecay
+main: aiptu\fastleafdecay\FastLeafDecay
+version: 1.0.0
+api: [5.0.0]
+author: AIPTU

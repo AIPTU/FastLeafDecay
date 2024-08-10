@@ -1,0 +1,13 @@
+# FastLeafDecay Configuration
+
+# The minimum delay (in seconds) before a leaf block decays after a nearby wood block is broken.
+# Must be a positive integer (>= 1).
+min_leaf_decay_delay: 1
+
+# The maximum delay (in seconds) before a leaf block decays after a nearby wood block is broken.
+# Must be a positive integer (>= min_leaf_decay_delay).
+max_leaf_decay_delay: 5
+
+# The maximum radius (in blocks) around the broken wood block within which leaves will be checked for decay.
+# Must be a positive integer (>= 1).
+max_search_radius: 6
