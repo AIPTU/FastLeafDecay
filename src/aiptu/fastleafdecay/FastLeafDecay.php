@@ -68,8 +68,7 @@ class FastLeafDecay extends PluginBase implements Listener {
 		$queue = new SplQueue();
 		$visited = [];
 
-		$queue->enqueue($origin);
-		$visited[World::blockHash($origin->getFloorX(), $origin->getFloorY(), $origin->getFloorZ())] = true;
+		$this->enqueuePosition($queue, $visited, $origin);
 
 		while (!$queue->isEmpty()) {
 			/** @var Vector3 $current */
@@ -84,7 +83,7 @@ class FastLeafDecay extends PluginBase implements Listener {
 					$block = $world->getBlock($neighbor);
 
 					if ($block instanceof Wood) {
-						return;
+						continue;
 					}
 
 					if ($block instanceof Leaves) {
@@ -96,17 +95,26 @@ class FastLeafDecay extends PluginBase implements Listener {
 						$ev->call();
 
 						if (!$ev->isCancelled()) {
-							$delay = mt_rand($this->minLeafDecayDelay, $this->maxLeafDecayDelay) * 20;
-							$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($world, $neighbor) : void {
-								$world->useBreakOn($neighbor);
-							}), $delay);
+							$this->scheduleLeafBreak($world, $neighbor);
 						}
 
-						$queue->enqueue($neighbor);
+						$this->enqueuePosition($queue, $visited, $neighbor);
 					}
 				}
 			}
 		}
+	}
+
+	private function scheduleLeafBreak(World $world, Vector3 $position) : void {
+		$delay = mt_rand($this->minLeafDecayDelay, $this->maxLeafDecayDelay) * 20;
+		$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($world, $position) : void {
+			$world->useBreakOn($position);
+		}), $delay);
+	}
+
+	private function enqueuePosition(SplQueue $queue, array &$visited, Vector3 $position) : void {
+		$queue->enqueue($position);
+		$visited[World::blockHash($position->getFloorX(), $position->getFloorY(), $position->getFloorZ())] = true;
 	}
 
 	private function isWithinRadius(Vector3 $origin, Vector3 $position) : bool {
