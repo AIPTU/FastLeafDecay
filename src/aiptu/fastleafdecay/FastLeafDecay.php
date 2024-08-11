@@ -7,6 +7,7 @@ namespace aiptu\fastleafdecay;
 use pocketmine\block\Leaves;
 use pocketmine\block\Wood;
 use pocketmine\event\block\BlockBreakEvent;
+use pocketmine\event\block\LeavesDecayEvent;
 use pocketmine\event\Listener;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
@@ -87,10 +88,19 @@ class FastLeafDecay extends PluginBase implements Listener {
 					}
 
 					if ($block instanceof Leaves) {
-						$delay = mt_rand($this->minLeafDecayDelay, $this->maxLeafDecayDelay) * 20;
-						$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($world, $neighbor) : void {
-							$world->useBreakOn($neighbor);
-						}), $delay);
+						if ($block->isNoDecay() && !$block->isCheckDecay()) {
+							continue;
+						}
+
+						$ev = new LeavesDecayEvent($block);
+						$ev->call();
+
+						if (!$ev->isCancelled()) {
+							$delay = mt_rand($this->minLeafDecayDelay, $this->maxLeafDecayDelay) * 20;
+							$this->getScheduler()->scheduleDelayedTask(new ClosureTask(function () use ($world, $neighbor) : void {
+								$world->useBreakOn($neighbor);
+							}), $delay);
+						}
 
 						$queue->enqueue($neighbor);
 					}
